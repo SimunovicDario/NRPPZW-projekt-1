@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>NRPPZW</title>
+	<link rel="stylesheet" href="leaflet.css" />
+</head>
+
+<body>
+	<div id="loading">Loading...</div>
+	<a id="action"></a>
+	<div id="user"></div>
+	<div id="coord"></div>
+	<div id="map" style="width: 75vw; height: 75vh"></div>
+	<script src="leaflet.js"></script>
+	<script>
+		let coord = document.getElementById("coord");
+		navigator.geolocation.getCurrentPosition((position) => {
+			const latitude = position.coords.latitude
+			const longitude = position.coords.longitude
+			coord.innerHTML = "Latitude: " + latitude + "<br>Longitude: " + longitude;
+			fetch('/location', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					longitude,
+					latitude
+				}),
+			}).then(response => response.json()).then(data => {
+				// Creating map options
+				const mapOptions = {
+					center: [latitude, longitude],
+					zoom: 10
+				}
+				// Creating a map object
+				let map = new L.map('map', mapOptions);
+				// Creating a Layer object
+				let layer = new L.TileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+				// Adding layer to the map
+				map.addLayer(layer);
+				let loading = document.getElementById("loading");
+				loading.style = "display: none;"
+				let action = document.getElementById("action");
+				if (!data) { // ako korisnik nije prijavljen
+					const marker = L.marker([latitude, longitude]).addTo(map)
+					marker.bindPopup(`Me, login time: ${new Date().toLocaleString()}`)
+					action.href = '/login'
+					action.innerHTML = 'Login'
+					return
+				}
+				action.href = '/logout'
+				action.innerHTML = 'Logout'
+				let user = document.getElementById("user");
+				user.innerHTML = data.me.name
+
+				data.list.forEach(user => {
+					const marker = L.marker([user.position.latitude, user.position.longitude]).addTo(map)
+					const template = user.mail === data.me.email ? 'Me &lt' + user.mail + '&gt' : user.name + ' &lt' + user.mail + '&gt'
+					marker.bindPopup(template + ', login time: ' + new Date(user.date).toLocaleString())
+				})
+			}).catch((error) => {
+				console.error('Error:', error);
+			});
+		}, err => coord.innerHTML = "Geolocation is not supported by this browser.");
+	</script>
+</body>
+
+</html>
