@@ -3,7 +3,7 @@
 
 <head>
 	<title>NRPPZW</title>
-	<link rel="stylesheet" href="leaflet.css" />
+	<link rel="stylesheet" href="leaflet/leaflet.css" />
 </head>
 
 <body>
@@ -12,7 +12,7 @@
 	<div id="user"></div>
 	<div id="coord"></div>
 	<div id="map" style="width: 75vw; height: 75vh"></div>
-	<script src="leaflet.js"></script>
+	<script src="leaflet/leaflet.js"></script>
 	<script>
 		let coord = document.getElementById("coord");
 		navigator.geolocation.getCurrentPosition((position) => {
@@ -45,7 +45,7 @@
 				let action = document.getElementById("action");
 				if (!data) { // ako korisnik nije prijavljen
 					const marker = L.marker([latitude, longitude]).addTo(map)
-					marker.bindPopup(`Me, login time: ${new Date().toLocaleString()}`)
+					marker.bindPopup(`Me, ${new Date().toLocaleString()}`)
 					action.href = '/login'
 					action.innerHTML = 'Login'
 					return
@@ -58,7 +58,7 @@
 				data.list.forEach(user => {
 					const marker = L.marker([user.position.latitude, user.position.longitude]).addTo(map)
 					const template = user.mail === data.me.email ? 'Me &lt' + user.mail + '&gt' : user.name + ' &lt' + user.mail + '&gt'
-					marker.bindPopup(template + ', login time: ' + new Date(user.date).toLocaleString())
+					marker.bindPopup(template + ', ' + new Date(user.date).toLocaleString())
 				})
 			}).catch((error) => {
 				console.error('Error:', error);
